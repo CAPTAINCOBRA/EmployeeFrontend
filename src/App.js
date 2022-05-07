@@ -18,7 +18,8 @@ function App() {
     getAllUsers();
   }, []);
 
-  const serverUrl = "http://localhost:8000/api";
+  // const serverUrl = "http://localhost:8000/api";
+  const serverUrl = "https://employee-api-backend.herokuapp.com/api";
 
   const [showCreateEmployee, setShowCreateEmployee] = useState(false);
   const onCreateEmployeeClick = () => setShowCreateEmployee(true);
