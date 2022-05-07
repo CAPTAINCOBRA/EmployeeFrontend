@@ -1,3 +1,7 @@
+// 07-05-2022 Bug-1 Loader
+// 07-05-2022 Bug-2 Create Button Handling
+// 07-05-2022 Bug-3 Update Button Handling
+
 import "./App.css";
 import { Navbar, Container, Form, Button, Modal, Table } from "react-bootstrap";
 import React, { useState, useEffect } from "react";
@@ -7,6 +11,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPencil, faTrash } from "@fortawesome/free-solid-svg-icons";
 
 import Toast from "./components/Toast/Toast.js";
+import Loader from "./components/Loader/Loader.js"; //Bug 1
 
 import { ToastContainer, toast, Slide } from "react-toastify";
 toast.configure();
@@ -15,6 +20,7 @@ function App() {
   const [allUsers, setAllUsers] = useState([]);
 
   useEffect(() => {
+    setLoader(true); //Bug 1
     getAllUsers();
   }, []);
 
@@ -22,8 +28,11 @@ function App() {
   const serverUrl = "https://employee-api-backend.herokuapp.com/api";
 
   const [showCreateEmployee, setShowCreateEmployee] = useState(false);
-  const onCreateEmployeeClick = () => setShowCreateEmployee(true);
-  const handleCreateEmployeeClose = () => setShowCreateEmployee(false);
+
+  const [loader, setLoader] = useState(false); //Bug 1
+
+  const [createButton, setCreateButton] = useState(false); //Bug 2
+  const [updateButton, setUpdateButton] = useState(false); //Bug 3
 
   const [showLogin, setShowLogin] = useState(false);
   const onLoginClick = () => setShowLogin(true);
@@ -33,11 +42,50 @@ function App() {
   const onShowAllClick = () => setShowAll(true);
   const handleShowAllClose = () => setShowAll(false);
 
+  // const onCreateEmployeeClick = () => setShowCreateEmployee(true);
+  const onCreateEmployeeClick = () => {
+    setShowCreateEmployee(true);
+    setCreateButton(true); //Bug 2
+  };
+  // const handleCreateEmployeeClose = () => setShowCreateEmployee(false);
+  const handleCreateEmployeeClose = () => {
+    setCreateButton(false); //Bug 2
+    setUpdateButton(false); //Bug 3
+
+    setShowCreateEmployee(false);
+    setEmployeeName("");
+    setEmployeeEmail("");
+    setEmployeeAge("");
+    setEmployeeDepartment("");
+  };
+
   const getAllUsers = () => {
     // axios.get("http://localhost:8000/api/employees").then((res) => {
-    axios.get(`${serverUrl}/employees`).then((res) => {
-      setAllUsers(res.data);
-    });
+    axios
+      .get(`${serverUrl}/employees`)
+      .then((res) => {
+        setAllUsers(res.data);
+        setLoader(false); //Bug 1
+      })
+      .catch((err) => {
+        console.log(err);
+        setLoader(false); //Bug 1
+
+        const msg = (
+          <Toast err={true} msg="Error Fetching All Users. Contact Admin!" />
+        );
+
+        toast.error(msg, {
+          className: "ToastErr Toast",
+          position: "bottom-left",
+          autoClose: 5000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+      });
   };
 
   const [employeeName, setEmployeeName] = useState("");
@@ -81,6 +129,7 @@ function App() {
 
   const onCreateEmployeeSubmit = (e) => {
     e.preventDefault();
+    setLoader(true); //Bug 1
     const newEmployee = {
       name: employeeName,
       email: employeeEmail,
@@ -92,6 +141,7 @@ function App() {
       // .post("http://localhost:8000/api/employee/create", newEmployee)
       .post(`${serverUrl}/employee/create`, newEmployee)
       .then((res) => {
+        setLoader(false); //Bug 1
         setAllUsers([...allUsers, res.data]);
         setEmployeeAge("");
         setEmployeeDepartment("");
@@ -113,8 +163,10 @@ function App() {
         });
 
         handleCreateEmployeeClose();
+        setCreateButton(false); //Bug 2
       })
       .catch((err) => {
+        setLoader(false); //Bug 1
         console.log(err);
 
         const msg = <Toast err={true} msg="Employee Creation Failed" />;
@@ -134,6 +186,7 @@ function App() {
 
   const handleEditEmployee = (e, id) => {
     e.preventDefault();
+    setUpdateButton(true); //Bug 3
 
     // axios.get(`http://localhost:8000/api/employee/${id}`).then((res) => {
     axios.get(`${serverUrl}/employee/${id}`).then((res) => {
@@ -147,7 +200,9 @@ function App() {
     });
   };
 
-  const handleUpdateEmployeeClose = (e, id) => {
+  const handleUpdateEmployee = (e, id) => {
+    e.preventDefault();
+    setLoader(true); //Bug 1
     setShowCreateEmployee(false);
     const updatedEmployee = {
       name: employeeName,
@@ -161,7 +216,9 @@ function App() {
       // .put(`http://localhost:8000/api/employee/${id}`, updatedEmployee)
       .put(`${serverUrl}/employee/${id}`, updatedEmployee)
       .then((res) => {
+        setUpdateButton(false); //Bug 3
         getAllUsers();
+        setLoader(false); //Bug 1
 
         const msg = <Toast err={false} msg="Employee Updated Successfully!" />;
 
@@ -177,6 +234,8 @@ function App() {
         });
       })
       .catch((err) => {
+        setUpdateButton(false); //Bug 3
+        setLoader(false); //Bug 1
         console.log(err);
 
         const msg = <Toast err={true} msg="Employee Updation Failed" />;
@@ -196,10 +255,12 @@ function App() {
 
   const handleDeleteEmployee = (e, id) => {
     e.preventDefault();
+    setLoader(true); //Bug 1
     // axios.delete(`http://localhost:8000/api/employee/${id}`).then((res) => {
     axios
       .delete(`${serverUrl}/employee/${id}`)
       .then((res) => {
+        setLoader(false); //Bug 1
         getAllUsers();
 
         const msg = <Toast err={false} msg="Employee Deleted Successfully!" />;
@@ -216,6 +277,7 @@ function App() {
         });
       })
       .catch((err) => {
+        setLoader(false); //Bug 1
         console.log(err);
 
         const msg = <Toast err={true} msg="Employee Deletion Failed" />;
@@ -235,6 +297,7 @@ function App() {
 
   const handleEmployeeLogin = (e) => {
     e.preventDefault();
+    setLoader(true); //Bug 1
 
     const loginDetails = {
       email: loginMail,
@@ -245,6 +308,7 @@ function App() {
     axios
       .post(`${serverUrl}/employee/signin`, loginDetails)
       .then((res) => {
+        setLoader(false); //Bug 1
         setShowLogin(false);
         setLoginMail("");
         setLoginPassword("");
@@ -265,6 +329,7 @@ function App() {
         });
       })
       .catch((err) => {
+        setLoader(false); //Bug 1
         console.log(err);
 
         setLoginPassword("");
@@ -376,19 +441,23 @@ function App() {
           <Button variant="secondary" onClick={handleCreateEmployeeClose}>
             Close
           </Button>
-          <Button
-            variant="info"
-            onClick={(e) => handleUpdateEmployeeClose(e, currentUserId)}
-          >
-            Update
-          </Button>
-          <Button
-            type="submit"
-            variant="primary"
-            onClick={onCreateEmployeeSubmit}
-          >
-            Submit
-          </Button>
+          {updateButton && ( //Bug 3
+            <Button
+              variant="primary"
+              onClick={(e) => handleUpdateEmployee(e, currentUserId)}
+            >
+              Update
+            </Button>
+          )}
+          {createButton && ( //Bug 2
+            <Button
+              type="submit"
+              variant="success"
+              onClick={onCreateEmployeeSubmit}
+            >
+              Create
+            </Button>
+          )}
         </Modal.Footer>
       </Modal>
 
@@ -480,6 +549,7 @@ function App() {
       </Modal>
 
       <ToastContainer transition={Slide} />
+      {loader && <Loader />}
     </div>
   );
 }
