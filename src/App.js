@@ -1,6 +1,7 @@
 // 07-05-2022 Bug-1 Loader
 // 07-05-2022 Bug-2 Create Button Handling
 // 07-05-2022 Bug-3 Update Button Handling
+// 07-05-2022 Bug-4 Validation
 
 import "./App.css";
 import { Navbar, Container, Form, Button, Modal, Table } from "react-bootstrap";
@@ -130,58 +131,87 @@ function App() {
   const onCreateEmployeeSubmit = (e) => {
     e.preventDefault();
     setLoader(true); //Bug 1
-    const newEmployee = {
-      name: employeeName,
-      email: employeeEmail,
-      age: employeeAge,
-      department: employeeDepartment,
-      password: employeePassword,
-    };
-    axios
-      // .post("http://localhost:8000/api/employee/create", newEmployee)
-      .post(`${serverUrl}/employee/create`, newEmployee)
-      .then((res) => {
-        setLoader(false); //Bug 1
-        setAllUsers([...allUsers, res.data]);
-        setEmployeeAge("");
-        setEmployeeDepartment("");
-        setEmployeeEmail("");
-        setEmployeeName("");
-        setEmployeePassword("");
 
-        const msg = <Toast err={false} msg="Employee Created Successfully!" />;
+    // Bug 4
+    if (
+      employeeName === "" ||
+      employeeEmail === "" ||
+      employeeAge === "" ||
+      employeeDepartment === "" ||
+      employeePassword === ""
+    ) {
+      setLoader(false); //Bug 1
 
-        toast.success(msg, {
-          className: "ToastSucc Toast",
-          position: "bottom-left",
-          autoClose: 5000,
-          hideProgressBar: true,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-        });
+      const msg = <Toast err={true} msg="All Fields are required!" />;
 
-        handleCreateEmployeeClose();
-        setCreateButton(false); //Bug 2
-      })
-      .catch((err) => {
-        setLoader(false); //Bug 1
-        console.log(err);
-
-        const msg = <Toast err={true} msg="Employee Creation Failed" />;
-
-        toast.error(msg, {
-          className: "ToastErr Toast",
-          position: "bottom-left",
-          autoClose: 5000,
-          hideProgressBar: true,
-          closeOnClick: true,
-          pauseOnHover: true,
-          draggable: true,
-          progress: undefined,
-        });
+      toast.error(msg, {
+        className: "ToastErr Toast",
+        position: "bottom-left",
+        autoClose: 5000,
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
       });
+    } else {
+      // Bug 4 ends
+      // Now we can Create the Employee
+      const newEmployee = {
+        name: employeeName,
+        email: employeeEmail,
+        age: employeeAge,
+        department: employeeDepartment,
+        password: employeePassword,
+      };
+      axios
+        // .post("http://localhost:8000/api/employee/create", newEmployee)
+        .post(`${serverUrl}/employee/create`, newEmployee)
+        .then((res) => {
+          setLoader(false); //Bug 1
+          setAllUsers([...allUsers, res.data]);
+          setEmployeeAge("");
+          setEmployeeDepartment("");
+          setEmployeeEmail("");
+          setEmployeeName("");
+          setEmployeePassword("");
+
+          const msg = (
+            <Toast err={false} msg="Employee Created Successfully!" />
+          );
+
+          toast.success(msg, {
+            className: "ToastSucc Toast",
+            position: "bottom-left",
+            autoClose: 5000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+          });
+
+          handleCreateEmployeeClose();
+          setCreateButton(false); //Bug 2
+        })
+        .catch((err) => {
+          setLoader(false); //Bug 1
+          console.log(err);
+
+          const msg = <Toast err={true} msg="Employee Creation Failed" />;
+
+          toast.error(msg, {
+            className: "ToastErr Toast",
+            position: "bottom-left",
+            autoClose: 5000,
+            hideProgressBar: true,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+          });
+        });
+    } // Bug 4
   };
 
   const handleEditEmployee = (e, id) => {
