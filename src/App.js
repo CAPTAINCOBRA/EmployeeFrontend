@@ -176,6 +176,9 @@ function App() {
           setEmployeeName("");
           setEmployeePassword("");
 
+          // console.log(res.data);
+          // setCurrentUserId(res.data._id); // Imp Bug TODO: Fix this
+
           const msg = (
             <Toast err={false} msg="Employee Created Successfully!" />
           );
@@ -219,15 +222,38 @@ function App() {
     setUpdateButton(true); //Bug 3
 
     // axios.get(`http://localhost:8000/api/employee/${id}`).then((res) => {
-    axios.get(`${serverUrl}/employee/${id}`).then((res) => {
-      setEmployeeName(res.data.name);
-      setEmployeeEmail(res.data.email);
-      setEmployeeAge(res.data.age);
-      setEmployeeDepartment(res.data.department);
-      setEmployeePassword(res.data.password);
-      setShowCreateEmployee(true);
-      setCurrentUserId(id);
-    });
+    axios
+      .get(`${serverUrl}/employee/${id}`)
+      .then((res) => {
+        setEmployeeName(res.data.name);
+        setEmployeeEmail(res.data.email);
+        setEmployeeAge(res.data.age);
+        setEmployeeDepartment(res.data.department);
+        setEmployeePassword(res.data.password);
+        setShowCreateEmployee(true);
+        setCurrentUserId(id);
+      })
+      .catch((err) => {
+        console.log(err);
+
+        const msg = (
+          <Toast
+            err={true}
+            msg="Error Fetching Employee. Try refreshing the page!"
+          />
+        );
+
+        toast.error(msg, {
+          className: "ToastErr Toast",
+          position: "bottom-left",
+          autoClose: 5000,
+          hideProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+        });
+      });
   };
 
   const handleUpdateEmployee = (e, id) => {
